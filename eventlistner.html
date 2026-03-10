@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <button id="btin">
+    click 
+  </button>
+  <p id="x">
+    0
+  </p>
+</body>
+<script>
+  
+  const button= document.getElementById("btin");
+
+  const counter= document.getElementById("x");
+  let c=0;
+  button.addEventListener("click", function(){
+    c++;
+    counter.innerText=c;
+    
+  })
+
+  
+</script>
+</html>

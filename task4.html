@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Validation</title>
+</head>
+
+<body>
+
+<form id="form">
+  <input type="text" id="name" placeholder="Enter name"><br><br>
+
+  <input type="password" id="password" placeholder="Enter password"><br><br>
+
+  <button type="submit">Submit</button>
+</form>
+
+<p id="message"></p>
+
+<script>
+
+const form = document.getElementById("form")
+
+form.addEventListener("submit", function(e){
+
+  e.preventDefault()
+
+  const password = document.getElementById("password").value
+  const message = document.getElementById("message")
+
+  if(password.length > 8){
+    message.innerText = "Password should not be more than 8 characters"
+  }
+
+  else if(password[0] !== password[0].toUpperCase()){
+    message.innerText = "First letter must be capital"
+  }
+
+  else{
+    message.innerText = "Password is valid"
+  }
+
+})
+
+</script>
+
+</body>
+</html>
