@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Todo App</title>
+
+<style>
+
+body{
+font-family: Arial;
+text-align:center;
+background:#f2f2f2;
+}
+
+input{
+padding:8px;
+width:200px;
+}
+
+button{
+padding:8px 12px;
+cursor:pointer;
+}
+
+ul{
+list-style:none;
+padding:0;
+margin-top:20px;
+}
+
+li{
+background:white;
+margin:10px auto;
+padding:10px;
+width:300px;
+display:flex;
+justify-content:space-between;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Smart Todo App</h2>
+
+<input type="text" id="taskInput" placeholder="Enter task">
+<button id="addBtn">Add Task</button>
+<button id="loadBtn">Load Tasks</button>
+
+<p id="status"></p>
+
+<ul id="taskList"></ul>
+
+<script>
+
+// DOM selection
+let input = document.querySelector("#taskInput")
+let addBtn = document.querySelector("#addBtn")
+let loadBtn = document.querySelector("#loadBtn")
+let list = document.querySelector("#taskList")
+let status = document.querySelector("#status")
+
+// CALLBACK example
+function processTask(callback){
+console.log("Processing task...")
+callback()
+}
+
+// ADD TASK
+addBtn.addEventListener("click", function(){
+
+let text = input.value
+
+if(text === "") return
+
+processTask(function(){
+
+let li = document.createElement("li")
+li.textContent = text
+
+let delBtn = document.createElement("button")
+delBtn.textContent = "Delete"
+
+li.appendChild(delBtn)
+list.appendChild(li)
+
+input.value=""
+
+})
+
+})
+
+// EVENT DELEGATION
+list.addEventListener("click", function(e){
+
+if(e.target.tagName === "LI"){
+e.target.style.textDecoration = "line-through"
+}
+
+if(e.target.tagName === "BUTTON"){
+e.target.parentElement.remove()
+}
+
+})
+
+// PROMISE
+function fetchTasks(){
+
+return new Promise(function(resolve){
+
+setTimeout(function(){
+
+resolve(["Learn JS","Practice DSA","Build Project"])
+
+},2000)
+
+})
+
+}
+
+// ASYNC / AWAIT
+async function loadTasks(){
+
+status.innerText = "Loading tasks..."
+
+let tasks = await fetchTasks()
+
+status.innerText = "Tasks loaded"
+
+tasks.forEach(function(task){
+
+let li = document.createElement("li")
+li.textContent = task
+
+let delBtn = document.createElement("button")
+delBtn.textContent = "Delete"
+
+li.appendChild(delBtn)
+list.appendChild(li)
+
+})
+
+}
+
+loadBtn.addEventListener("click", loadTasks)
+
+</script>
+
+</body>
+</html>
