@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz Master</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #4ade80;
+            --error: #f87171;
+        }
+
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--bg); 
+            color: var(--text);
+        }
+
+        #quiz-card { 
+            background: var(--card-bg); 
+            padding: 2rem; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            width: 90%;
+            max-width: 400px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        button { 
+            display: block; 
+            width: 100%; 
+            margin: 10px 0; 
+            padding: 14px; 
+            cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            background: rgba(255,255,255,0.05); 
+            color: var(--text);
+            font-weight: 500;
+            transition: all 0.2s ease; 
+        }
+
+        button:hover:not(:disabled) { 
+            background: var(--primary); 
+            transform: translateY(-2px);
+        }
+
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        #start-btn { background: var(--primary); border: none; margin-top: 10px; }
+
+        #feedback {
+            margin-top: 20px;
+            min-height: 24px;
+            font-weight: 600;
+        }
+
+        .loading-pulse { animation: pulse 1.5s infinite; color: var(--text-dim); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    </style>
+</head>
+<body>
+
+<div id="quiz-card">
+    <div id="setup-ui">
+        <h2>AI Quiz Bot</h2>
+        <p style="color: var(--text-dim)">Enter a topic to begin</p>
+        <input type="text" id="topic-input" placeholder="e.g. Marvel Movies, Geography...">
+        <button id="start-btn">Start Quiz</button>
+    </div>
+
+    <div id="quiz-ui" style="display:none;">
+        <h3 id="question-text">Generating...</h3>
+        <div id="options-container"></div>
+        <p id="feedback"></p>
+    </div>
+</div>
+
+<script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+    // PASTE YOUR NEW KEY HERE
+    const API_KEY = "API"; 
+    const genAI = new GoogleGenerativeAI(API_KEY);
+
+    const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+        systemInstruction: "You are a quiz bot. Respond ONLY in JSON. Format: {'question': string, 'options': [string, string, string, string], 'correctAnswer': string}",
+        generationConfig: { responseMimeType: "application/json" }
+    });
+
+    const setupUI = document.getElementById('setup-ui');
+    const quizUI = document.getElementById('quiz-ui');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const feedback = document.getElementById('feedback');
+    const topicInput = document.getElementById('topic-input');
+
+    document.getElementById('start-btn').onclick = () => {
+        setupUI.style.display = 'none';
+        quizUI.style.display = 'block';
+        loadNextQuestion();
+    };
+
+    async function loadNextQuestion() {
+        questionText.innerHTML = '<span class="loading-pulse">AI is thinking...</span>';
+        optionsContainer.innerHTML = "";
+        feedback.innerText = "";
+
+        try {
+            const topic = topicInput.value || "General Knowledge";
+            const result = await model.generateContent(`Generate a quiz question about ${topic}`);
+            const data = JSON.parse(result.response.text());
+            renderQuestion(data);
+        } catch (err) {
+            questionText.innerText = "Error loading question. Please check your API key.";
+            console.error(err);
+        }
+    }
+
+    function renderQuestion(data) {
+        questionText.innerText = data.question;
+        
+        data.options.forEach(option => {
+            const btn = document.createElement('button');
+            btn.innerText = option;
+            btn.onclick = () => {
+                // Disable all buttons so they can't click twice
+                Array.from(optionsContainer.children).forEach(b => b.disabled = true);
+                
+                if (option === data.correctAnswer) {
+                    feedback.innerText = "Correct! ✨";
+                    feedback.style.color = "var(--success)";
+                } else {
+                    feedback.innerText = `Incorrect. Answer: ${data.correctAnswer}`;
+                    feedback.style.color = "var(--error)";
+                }
+
+                // Wait 2 seconds and load next
+                setTimeout(loadNextQuestion, 2000);
+            };
+            optionsContainer.appendChild(btn);
+        });
+    }
+</script>
+
+</body>
+</html>
